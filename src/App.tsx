@@ -1,20 +1,9 @@
 import "./App.css";
 import QRCode from "qrcode.react";
-import { ReactNode, useState } from "react";
-import { TopUpSelect } from "./pages/TopUpSelect.tsx";
-import { Cents } from "./utils.ts";
-import { ForeignBankPage } from "./pages/ForeignBankPage.tsx";
-import { useQueryParam } from "./hooks/useQueryParam.tsx";
+import { ReactNode } from "react";
 import { Toaster } from "react-hot-toast";
-import { Outlet, useLocation } from "react-router-dom";
+import { Outlet } from "react-router-dom";
 import { useWallet, WalletContextProvider } from "./context/WalletContext.tsx";
-
-export enum Pages {
-  Home = "home",
-  ForeignScan = "foreign-pay",
-  PixScan = "pix-pay",
-  TopUp = "top-up",
-}
 
 function App() {
   return (
@@ -23,82 +12,6 @@ function App() {
       <Outlet />
     </WalletContextProvider>
   );
-}
-
-export function AppContent() {
-  const [amount, setAmount] = useState<Cents>({ cents: 0 });
-  const [page, setPage] = useQueryParam<Pages>("page", Pages.TopUp);
-
-  const location = useLocation();
-
-  const qrData =
-    "00020126580014br.gov.bcb.pix0136f8dc3b59-072b-4d44-857b-90e9e8f30c94520400005303986540510.005802BR5917Brla Digital Ltda6009Sao Paulo6223051900001IP2THFKHQdr54q6304505A";
-
-  if (page === Pages.TopUp)
-    return (
-      <Wrapper title={"Choose top up amount"}>
-        <TopUpSelect amount={amount} setAmount={setAmount} setPage={setPage} />
-      </Wrapper>
-    );
-
-  if (page === Pages.ForeignScan)
-    return (
-      <Wrapper onBack={() => setPage(Pages.Home)} title={"Scan QR Code to pay"}>
-        <ForeignBankPage
-          amount={amount}
-          qrData={`${location.pathname}?page=${Pages.ForeignScan}&amount=${amount.cents}`}
-        />
-      </Wrapper>
-    );
-
-  if (page === Pages.Home)
-    return (
-      <Wrapper title={"Select home bank"} onBack={() => setPage(Pages.TopUp)}>
-        <button
-          onClick={() => setPage(Pages.PixScan)}
-          className={
-            "flex items-center rounded-lg group hover:bg-slate-100 transition ring-black/5 space-x-8 ring-1 p-6 w-full max-w-96"
-          }
-        >
-          <div className={"flex flex-col text-start flex-1"}>
-            <span className={"text-base"}>🇧🇷</span>
-            <span className={"text-base font-medium text-slate-900"}>
-              I have a Brazilian Bank
-            </span>
-            <span className={"text-sm font-light text-slate-700"}>
-              I live in Brazil and am able to pay with PIX
-            </span>
-          </div>
-          <i
-            className={
-              "bx text-lg bx-right-arrow-alt text-slate-900 transition group-hover:translate-x-0.5"
-            }
-          />
-        </button>
-
-        <button
-          onClick={() => setPage(Pages.ForeignScan)}
-          className={
-            "flex items-center justify-start outline-none group hover:bg-slate-100 transition rounded-lg ring-black/5 space-x-8 ring-1 p-6 w-full max-w-96"
-          }
-        >
-          <div className={"flex flex-col text-start flex-1"}>
-            <span className={"text-base"}>🇺🇸 🇨🇦 🇪🇺</span>
-            <span className={"text-base font-medium text-slate-900"}>
-              I'm a foreigner
-            </span>
-            <span className={"text-sm font-light text-slate-700"}>
-              I do not have a Brazilian bank account and cannot pay with PIX
-            </span>
-          </div>
-          <i
-            className={
-              "bx text-lg bx-right-arrow-alt text-slate-900 transition group-hover:translate-x-0.5"
-            }
-          />
-        </button>
-      </Wrapper>
-    );
 }
 
 export function Wrapper({
@@ -149,8 +62,6 @@ export function Wrapper({
 
 function WalletUi() {
   const { wallet } = useWallet();
-
-  console.log({ wallet });
 
   // const getBalance = useCallback(async () => {
   //     if(!wallet) return;

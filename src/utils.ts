@@ -88,3 +88,31 @@ export function doUrlDecrypt(text: string) {
   const decodedText = urlSafeDecode(text);
   return decryptString(decodedText, secretKey);
 }
+
+export async function getBrlaTransactionHistory(
+  jwt: string,
+  paymentId: string,
+  unauthorizedCallback: () => void,
+) {
+  const res = await getData(
+    `https://api.brla.digital:4567/v1/business/pay-in/pix-to-usd/history?id=${paymentId}`,
+    { Authorization: "Bearer " + jwt },
+  );
+
+  console.log({ res });
+
+  if (res.status === 401) return unauthorizedCallback();
+
+  const json = await res.json();
+  console.log({ json });
+
+  if (!json || !json[0]) return null;
+
+  const log = json.depositLogs[0];
+
+  return {
+    settlementAddress: log.receiverAddress,
+    reference: log.referenceLabel,
+    signature: log.pixToUsdOps[0].smartContractOps[0].tx,
+  };
+}
