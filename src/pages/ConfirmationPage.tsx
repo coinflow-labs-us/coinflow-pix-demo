@@ -1,8 +1,13 @@
 import { Link, useSearchParams } from "react-router-dom";
 import { useWallet } from "../context/WalletContext.tsx";
-import { centsToDollars, doUrlDecrypt } from "../utils.ts";
+import {
+  centsToDollars,
+  centsToLocalizedDollars,
+  doUrlDecrypt,
+} from "../utils.ts";
 import { LoadingSpinner } from "../LoadingSpinner.tsx";
 import { useTransaction } from "../hooks/useTransaction.tsx";
+import { SETTLEMENT_ADDRESS } from "./DepositPage.tsx";
 
 export function ConfirmationPage() {
   const [searchParams] = useSearchParams();
@@ -12,9 +17,8 @@ export function ConfirmationPage() {
   const amount = searchParams.get("amount");
   const quote = searchParams.get("quote");
   const urlJwt = searchParams.get("jwt");
-  console.log({ urlJwt });
+
   const jwt = doUrlDecrypt(urlJwt ?? "");
-  console.log({ jwt });
   const paymentId = searchParams.get("id");
 
   const transaction = useTransaction(jwt, paymentId ?? "", 3000);
@@ -25,7 +29,7 @@ export function ConfirmationPage() {
     return (
       <div
         className={
-          "w-screen h-screen flex flex-col items-center justify-center bg-emerald-600"
+          "w-screen min-h-screen py-8 flex flex-col items-center justify-center bg-emerald-600"
         }
       >
         <div
@@ -33,9 +37,12 @@ export function ConfirmationPage() {
             "flex flex-col items-center justify-center size-80 rounded-lg bg-white relative"
           }
         >
-          <LoadingSpinner color={"#000000"} className={"!size-7"} />
-          <h2 className={"text-xl font-medium text-slate-900 mt-4"}>
-            Loading Payment
+          <LoadingSpinner
+            color={"black"}
+            className={"!size-7 !fill-slate-900 !text-slate-900/20"}
+          />
+          <h2 className={"text-base font-medium text-slate-900 mt-4"}>
+            Completing payment
           </h2>
         </div>
       </div>
@@ -43,12 +50,32 @@ export function ConfirmationPage() {
   }
 
   return (
+    <PaymentReceipt transaction={transaction} amount={amount} quote={quote} />
+  );
+}
+
+export function PaymentReceipt({
+  transaction,
+  amount,
+  quote,
+}: {
+  transaction: {
+    settlementAddress: string;
+    signature: string;
+    reference: string;
+  };
+  amount: number | string | null;
+  quote: number | string | null;
+}) {
+  return (
     <div
       className={
-        "w-screen h-screen flex flex-col items-center justify-center bg-emerald-600"
+        "w-screen min-h-screen py-8 px-4 flex flex-col items-center justify-center bg-emerald-600 overflow-auto"
       }
     >
-      <div className={"flex flex-col w-96 rounded-lg bg-white relative"}>
+      <div
+        className={"flex flex-col w-full md:w-96 rounded-lg bg-white relative"}
+      >
         <h1
           className={
             "text-xl font-medium m-4 flex text-emerald-600 pb-4 border-dashed border-b border-black/10"
@@ -70,6 +97,7 @@ export function ConfirmationPage() {
           <div className={"flex items-baseline mt-2"}>
             <span className={"flex-1 text-slate-700 text-sm"}>Transaction</span>
             <a
+              target={"_blank"}
               href={`https://amoy.polygonscan.com/tx/${transaction.signature}`}
               className={
                 "text-emerald-600 text-xs underline decoration-emerald-600"
@@ -83,6 +111,7 @@ export function ConfirmationPage() {
               Settlement Address
             </span>
             <a
+              target={"_blank"}
               href={`https://amoy.polygonscan.com/address/${transaction.settlementAddress}`}
               className={
                 "text-emerald-600 text-xs underline decoration-emerald-600"
@@ -130,7 +159,7 @@ export function ConfirmationPage() {
           <div className={"flex items-baseline mt-2"}>
             <span className={"flex-1 text-slate-700 text-sm"}>Total</span>
             <span className={"text-slate-900 text-lg font-semibold"}>
-              R$ {quote}
+              R$ {centsToDollars({ cents: quote ? Number(quote) : 0 })}
             </span>
           </div>
         </div>
@@ -138,6 +167,24 @@ export function ConfirmationPage() {
         <div className={"flex flex-col w-full md:w-96"}>
           <PaymentSuccess {...transaction} />
         </div>
+        <div
+          className={"flex-1 border-b border-dashed border-black/10 mx-4 mb-4"}
+        />
+        <span
+          className={"text-center text-slate-500 text-xs font-regular pb-5"}
+        >
+          {centsToLocalizedDollars({ cents: amount ? Number(amount) : 0 })} USDC
+          settled to{" "}
+          <a
+            target={"_blank"}
+            href={`https://amoy.polygonscan.com/address/${transaction.settlementAddress}`}
+            className={
+              "text-emerald-600 text-xs underline decoration-emerald-600"
+            }
+          >
+            {SETTLEMENT_ADDRESS}
+          </a>
+        </span>
       </div>
 
       <Link
@@ -153,15 +200,7 @@ export function ConfirmationPage() {
   );
 }
 
-export function PaymentSuccess({
-  signature,
-  reference,
-  settlementAddress,
-}: {
-  signature: string;
-  reference: string;
-  settlementAddress: string;
-}) {
+export function PaymentSuccess({ signature }: { signature: string }) {
   return (
     <div
       className={
@@ -187,7 +226,7 @@ export function PaymentSuccess({
         target={"_blank"}
         href={`https://amoy.polygonscan.com/tx/${signature}#eventlog`}
         className={
-          "text-sm hover:opacity-80  transition underline decoration-emerald-600 text-emerald-600"
+          "text-sm hover:opacity-80  transition underline decoration-emerald-600 text-emerald-600 mb-4"
         }
       >
         View transaction

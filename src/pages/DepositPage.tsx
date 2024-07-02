@@ -12,6 +12,8 @@ import { toast } from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import { LoadingSpinner } from "../LoadingSpinner.tsx";
 
+export const SETTLEMENT_ADDRESS = "0x3D3ECccC2D95731c3668E8C93f1d2aD2ac60ec97";
+
 export function DepositPage() {
   const [stringAmount, setStringAmount] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
@@ -75,12 +77,11 @@ export function DepositPage() {
           "https://api.brla.digital:4567/v1/business/pay-in/pix-to-usd",
           {
             token: quote.token,
-            receiverAddress: "0x3D3ECccC2D95731c3668E8C93f1d2aD2ac60ec97",
+            receiverAddress: SETTLEMENT_ADDRESS,
           },
           { Authorization: "Bearer " + jwt },
         )
       ).json();
-      console.log({ res });
       if (res.error) {
         setError(res.error);
         throw new Error(res.error);
@@ -125,7 +126,7 @@ export function DepositPage() {
 
   return (
     <Wrapper title={"Choose top up amount"}>
-      <div className={"flex flex-col items-center justify-center w-96"}>
+      <div className={"flex flex-col items-center justify-center w-full"}>
         <div className={"relative w-full"}>
           <span
             className={
@@ -141,13 +142,14 @@ export function DepositPage() {
             type={"number"}
             value={stringAmount}
             onChange={(e) => {
+              if (Number(e.target.value) > 20) setError("Max payment of $20");
+              else if (error) setError(null);
+
               setStringAmount(e.target.value);
               setAmount(dollarsToCents(e.target.value));
             }}
             placeholder={"Enter top up amount"}
-            className={
-              "font-medium caret-emerald-600 my-6 pl-10 w-full bg-white border-b border-b-black/5 focus:border-b-emerald-600 focus:border-b-2  outline-none  transition  flex items-center p-4 text-2xl text-slate-900"
-            }
+            className={`font-medium caret-emerald-600 my-6 pl-10 w-full bg-white border-b ${error ? "border-b-red-500 focus:border-b-red-500" : "border-b-black/5  focus:border-b-emerald-600"} focus:border-b-2  outline-none  transition  flex items-center p-4 text-2xl text-slate-900`}
           />
         </div>
         <div className={"flex space-x-6 w-full mb-6"}>
@@ -172,7 +174,12 @@ export function DepositPage() {
         />
 
         <button
-          onClick={() => getBrCode()}
+          onClick={() => {
+            if (Number(amount.cents) > 2000) {
+              toast.error("Max payment of $20");
+              setError("Max payment of $20");
+            } else getBrCode().catch();
+          }}
           className={
             "rounded-lg flex items-center justify-center h-14 hover:bg-emerald-500 transition group bg-emerald-600 text-white font-semibold text-sm w-full"
           }
@@ -195,7 +202,7 @@ export function DepositPage() {
       {error ? (
         <div
           className={
-            "bg-red-50 flex flex-col rounded-md ring-1 ring-red-100 text-red-900 text-sm p-4 pt-2 w-96"
+            "bg-red-50 flex flex-col rounded-md ring-1 ring-red-100 text-red-900 text-sm p-4 pt-2 w-full lg:w-96"
           }
         >
           <div className={"flex w-full items-center justify-between"}>

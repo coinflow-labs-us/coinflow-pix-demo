@@ -99,16 +99,19 @@ export async function getBrlaTransactionHistory(
     { Authorization: "Bearer " + jwt },
   );
 
-  console.log({ res });
-
   if (res.status === 401) return unauthorizedCallback();
 
   const json = await res.json();
-  console.log({ json });
 
-  if (!json || !json[0]) return null;
+  if (
+    !json ||
+    !json.depositsLogs ||
+    !json.depositsLogs[0] ||
+    !json.depositsLogs[0].pixToUsdOps
+  )
+    return null;
 
-  const log = json.depositLogs[0];
+  const log = json.depositsLogs[0];
 
   return {
     settlementAddress: log.receiverAddress,

@@ -1,6 +1,18 @@
 @import url('https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400..700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap');
 
+body {
+    background-color: #059669 !important
+}
+
+html {
+    background-color: #059669 !important
+}
+
+#root {
+    background-color: #059669
+
+}
 
 * {
     font-family: "Outfit", sans-serif;

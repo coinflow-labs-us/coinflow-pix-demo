@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 export function useTransaction(
   jwt: string,
   paymentId: string,
-  interval?: number = 10000,
+  interval: number = 10000,
 ) {
   const navigate = useNavigate();
 

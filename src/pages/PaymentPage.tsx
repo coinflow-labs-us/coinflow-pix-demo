@@ -3,31 +3,34 @@ import { QRCodeComponent, Wrapper } from "../App.tsx";
 import { toast } from "react-hot-toast";
 import { useWalletStore } from "../stores/useWalletStore.tsx";
 import { useMemo } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useJwtStore } from "../stores/useJwtStore.tsx";
 import { useTransaction } from "../hooks/useTransaction.tsx";
-import { PaymentSuccess } from "./ConfirmationPage.tsx";
+import { PaymentReceipt } from "./ConfirmationPage.tsx";
 
 export function PaymentPage() {
   const { jwt } = useJwtStore();
   const { mnemonic } = useWalletStore();
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
 
   const amount = Number(searchParams.get("amount"));
   const quote = Number(searchParams.get("quote"));
   const brCode = searchParams.get("code");
   const paymentId = searchParams.get("id");
 
-  const transaction = useTransaction(jwt, paymentId ?? "");
+  const transaction = useTransaction(jwt, paymentId ?? "", 20000);
+
+  const encryptedJwt = doUrlEncrypt(jwt);
 
   const url = useMemo(() => {
-    return `/confirm?amount=${amount}&quote=${quote}&jwt&wallet=${doUrlEncrypt(mnemonic)}&id=${paymentId}&jwt=${doUrlEncrypt(jwt)}`;
-  }, [amount, quote, mnemonic, paymentId, jwt]);
+    return `/confirm?amount=${amount}&quote=${quote}&wallet=${doUrlEncrypt(mnemonic)}&id=${paymentId}&jwt=${encryptedJwt}`;
+  }, [amount, quote, mnemonic, paymentId, encryptedJwt]);
 
   const copyToClipboard = async () => {
     if ("clipboard" in navigator) {
       try {
-        await navigator.clipboard.writeText(url);
+        await navigator.clipboard.writeText(window.location.host + url);
         toast.success("Link copied");
       } catch (err) {
         console.error("Failed to copy: ", err);
@@ -37,21 +40,17 @@ export function PaymentPage() {
 
   if (transaction) {
     return (
-      <Wrapper title={"Payment complete"}>
-        <div
-          className={"flex flex-col items-center justify-center w-full md:w-96"}
-        >
-          <PaymentSuccess {...transaction} />
-        </div>
-      </Wrapper>
+      <PaymentReceipt
+        transaction={transaction}
+        amount={amount.toString()}
+        quote={quote.toString()}
+      />
     );
   }
 
   return (
-    <Wrapper title={"Scan QR code to pay"}>
-      <div
-        className={"flex flex-col items-center justify-center w-full md:w-96"}
-      >
+    <Wrapper onBack={() => navigate(-1)} title={"Scan QR code to pay"}>
+      <div className={"flex flex-col items-center justify-center w-full"}>
         <QRCodeComponent value={brCode ?? ""} />
         <div
           className={

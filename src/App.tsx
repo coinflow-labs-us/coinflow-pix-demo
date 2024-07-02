@@ -9,7 +9,9 @@ function App() {
   return (
     <WalletContextProvider>
       <Toaster position={"bottom-center"} />
-      <Outlet />
+      <div className={"overflow-auto bg-emerald-600"}>
+        <Outlet />
+      </div>
     </WalletContextProvider>
   );
 }
@@ -26,17 +28,17 @@ export function Wrapper({
   return (
     <div
       className={
-        "w-screen flex flex-col items-center justify-center h-screen bg-white"
+        "w-screen flex flex-col overflow-auto py-12 px-4 bg-emerald-600 min-h-screen"
       }
     >
-      <h1 className={"text-4xl font-medium text-emerald-600 mb-4"}>
+      <h1 className={"text-4xl font-medium text-white mb-4 text-center"}>
         pixel • pay
       </h1>
       <WalletUi />
 
       <div
         className={
-          "rounded-3xl ring-black/5 ring-1 relative overflow-hidden bg-white mt-8"
+          "rounded-lg ring-black/5 ring-1 relative overflow-hidden bg-white mt-8 w-full md:w-96 m-auto"
         }
       >
         <div
@@ -63,32 +65,12 @@ export function Wrapper({
 function WalletUi() {
   const { wallet } = useWallet();
 
-  // const getBalance = useCallback(async () => {
-  //     if(!wallet) return;
-  //
-  //     const provider = new ethers.providers.JsonRpcProvider(
-  //         "https://polygon-rpc.com/",
-  //     );
-  //
-  //     const walletAddress = wallet.address;
-  //     const tokenAddress = "0x41e94eb019c0762f9bfcf9fb1e58725bfb0e7582"; // Example: USDC on Polygon
-  //
-  //     const tokenAbi = [
-  //         // balanceOf
-  //         "function balanceOf(address owner) view returns (uint256)",
-  //     ];
-  //
-  //     const tokenContract = new ethers.Contract(tokenAddress, tokenAbi, provider);
-  //
-  //     setBalance( await tokenContract.balanceOf(walletAddress))
-  // } [])
-
   if (!wallet) return null;
 
   return (
-    <div className={"flex space-x-2 items-center"}>
-      <i className={"bx bxs-wallet text-slate-900"} />
-      <span className={"text-slate-600 font-light text-xs"}>
+    <div className={"flex space-x-2 items-center mx-auto"}>
+      <i className={"bx bxs-wallet text-white/70"} />
+      <span className={"text-white/70 font-light text-xs"}>
         {wallet.address}
       </span>
     </div>
