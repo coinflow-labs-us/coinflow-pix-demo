@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: example-merchant-production
+    name: pix-demo
     runtime: static
     branch: main
     domains:
