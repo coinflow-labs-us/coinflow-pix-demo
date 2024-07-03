@@ -16,7 +16,7 @@ export function PaymentPage() {
 
   const amount = Number(searchParams.get("amount"));
   const quote = Number(searchParams.get("quote"));
-  const brCode = searchParams.get("code");
+  // const brCode = searchParams.get("code");
   const paymentId = searchParams.get("id");
 
   const transaction = useTransaction(jwt, paymentId ?? "", 20000);
@@ -51,7 +51,7 @@ export function PaymentPage() {
   return (
     <Wrapper onBack={() => navigate(-1)} title={"Scan QR code to pay"}>
       <div className={"flex flex-col items-center justify-center w-full"}>
-        <QRCodeComponent value={brCode ?? ""} />
+        <QRCodeComponent value={url} />
         <div
           className={
             "flex items-center space-x-1 text-xs text-emerald-900 bg-emerald-100 rounded-xl p-1 pr-2"
