@@ -3,10 +3,10 @@ services:
     name: pix-demo
     runtime: static
     branch: main
-    domains:
-      - pix.coinflow.cash
+#    domains:
+#      - pix.coinflow.cash
     buildCommand: npm ci && npm run build
-
+    staticPublishPath: build
     routes:
       - type: rewrite
         source: /*
